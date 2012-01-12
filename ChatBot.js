@@ -47,6 +47,11 @@
 	
 	var fuck_dubstep = true;
 	
+	var connectedToAIM= true;
+
+	// Set when we're relaying messages to a real chat bot to get reasonable responses
+	var relay_to_bot= true;
+	
 	// Kick this user next time
 	var user_to_kick;
 	var about_to_kick;
@@ -72,12 +77,14 @@
 	
 	// Connect to AIM
 	aim.connect(function(err) {
-	  if (err)
+	  if (err) {
 		console.log('AIM connection error: ' + err);
-	  else {
+		connectedToAIM = false;
+	  } else {
 		console.log('Connected to AIM!');
 		// automatically check for offline messages
 		aim.getOfflineMsgs();
+		connectedToAIM = true;
 	  }
 	});
 	
@@ -108,19 +115,36 @@
 	});
 	*/
 	
+	bot.on('roomChanged', function (data) { 
+		if( connectedToAIM ) {
+			KeepAimAlive();
+		}
+		
+		botSpeak( bot, "Aaaand we're back" );
+	});
+	
 	
 	// Handle IM's
 	aim.on('im', function(text, sender, flags, when) {
+		if( sender.name.indexOf("woofus") != -1 ) {
+			console.log( "Got an AIM message from ourselves" );
+			setTimeout("KeepAimAlive()",600000);
+			return;
+		}
+	
 		console.log('test.js :: received ' + (when ? 'offline ' : '')
 					+ 'IM from ' + sender.name + (when ? ' (on ' + when + ')' : '')
 				    + ': ' + text);
-		if (when)			// I don't know what this does...
-			return;
 		
-		// If we're responding to a command from woofus, ignore it
+		// Do different things if it's coming from a special user (us or a chat bot)
 		if ( sender.name.indexOf("woofus") != -1 )
 			return;
+		else if( sender.name.indexOf("alice@worldofalice.com") != -1 ) {
+			botSpeak( bot, text );
+			return;
+		}
 		
+		// Test responses to make sure we're online
 		if( text.indexOf("woofus") != -1 ) {
 			aim.sendIM(sender.name, 'woofus');
 		} else {
@@ -433,7 +457,8 @@
 		// Say stuff when someone says woofus
 	    if ( !handled_command && text.indexOf("woofus") != -1 ) {
 			console.log('\nI heard my name\n\n', data); 
-			botSpeak( bot, '/me woofus' );
+			relayToBot( text.replace("woofus", "") );
+			//botSpeak( bot, '/me woofus' );
 			sleep(1000);
 	    }
 		
@@ -560,6 +585,16 @@
 	function skipSong( targetBot) {
 		targetBot.stopSong();
 	}
+	
+	function relayToBot( message ) {
+		aim.sendIM( "alice@worldofalice.com", message );
+	}
+	
+	function KeepAimAlive()
+	{
+		console.log( "Keeping aim alive" );
+		aim.sendIM(tt_auth.GetScreenName(), 'ha ha ha ha stayin alive');
+	}	
 	
 	function sleep(ms) {
 	
