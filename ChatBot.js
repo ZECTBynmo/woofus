@@ -117,7 +117,9 @@
 	
 	bot.on('roomChanged', function (data) { 
 		if( connectedToAIM ) {
-			KeepAimAlive();
+			setInterval( function() {
+				aim.sendIM(tt_auth.GetScreenName(),'stayalive');
+			},60000);
 		}
 		
 		botSpeak( bot, "Aaaand we're back" );
@@ -128,7 +130,6 @@
 	aim.on('im', function(text, sender, flags, when) {
 		if( sender.name.indexOf("woofus") != -1 ) {
 			console.log( "Got an AIM message from ourselves" );
-			setTimeout("KeepAimAlive()",600000);
 			return;
 		}
 	
@@ -140,8 +141,10 @@
 		if ( sender.name.indexOf("woofus") != -1 )
 			return;
 		else if( sender.name.indexOf("alice@worldofalice.com") != -1 ) {
-			botSpeak( bot, text );
-			return;
+			if( text.indexOf("woofusTT") == -1 ) {
+				botSpeak( bot, text.replace("Alice", "woofus") );
+				return;
+			}
 		}
 		
 		// Test responses to make sure we're online
@@ -587,7 +590,8 @@
 	}
 	
 	function relayToBot( message ) {
-		aim.sendIM( "alice@worldofalice.com", message );
+		if( relay_to_bot && connectedToAIM )
+			aim.sendIM( "alice@worldofalice.com", message );
 	}
 	
 	function KeepAimAlive()
