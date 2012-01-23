@@ -45,9 +45,11 @@
 	var currently_sending_trooper = false;
 	var trooper_sent = 0;
 	
+	var allow_disco_mode= false;
+	
 	var fuck_dubstep = true;
 	
-	var connectedToAIM= true;
+	var connectedToAIM= false;
 
 	// Set when we're relaying messages to a real chat bot to get reasonable responses
 	var relay_to_bot= true;
@@ -76,6 +78,7 @@
 	
 	
 	// Connect to AIM
+	
 	aim.connect(function(err) {
 	  if (err) {
 		console.log('AIM connection error: ' + err);
@@ -118,9 +121,20 @@
 	bot.on('roomChanged', function (data) { 
 		if( connectedToAIM ) {
 			setInterval( function() {
-				aim.sendIM(tt_auth.GetScreenName(),'stayalive');
-			},60000);
+				aim.sendIM(tt_auth.GetScreenName(),'stay alive');
+			},100000);
 		}
+		
+		bot.stalk( user_to_follow, function(data) {
+					console.log( '\nUser is still in the room\n\n' );
+					console.log( data );
+					
+					if( data.roomId != current_room ) {
+						console.log( '\nFollowing the user' ); 
+						changeRooms( bot, data.roomId );
+						current_room = data.roomId;
+					}
+		}); // end bot stalk	
 		
 		botSpeak( bot, "Aaaand we're back" );
 	});
@@ -141,7 +155,8 @@
 		if ( sender.name.indexOf("woofus") != -1 )
 			return;
 		else if( sender.name.indexOf("alice@worldofalice.com") != -1 ) {
-			if( text.indexOf("woofusTT") == -1 ) {
+			// Alice likes to spit crap at us, so attempt to filter some out
+			if( text.indexOf("woofusTT") == -1 && text.indexOf("Macbookair") == -1 ) {
 				botSpeak( bot, text.replace("Alice", "woofus") );
 				return;
 			}
@@ -202,23 +217,26 @@
 		
 		// Follow this user
 		if ( data.userid == user_to_follow && text.indexOf("follow me") != -1 && text.indexOf("woofus") != -1 ) {
-			botSpeak( bot, "Where?" );
+			botSpeak( bot, "Right behind you" );
 			console.log('\n Following ' + data.name + '\n', data); 
 			currently_following = true;
+			
+			var followTimer= setInterval( function() {				
+				bot.stalk( user_to_follow, function(data) {
+					console.log( '\nDidnt find the user!\n\n' );
+					console.log( data );
+					
+					if( data.roomId != current_room ) {
+						console.log( '\nFound the user!' ); 
+						changeRooms( bot, data.roomId );
+						current_room = data.roomId;
+						clearInterval(followTimer);
+						currently_following = false;
+					}
+				}); // end bot stalk	
+			},2000);
 			handled_command = true;
 	    }
-		
-		// Switch rooms if we're in follow mode
-		if( currently_following && !handled_command ) {
-			if( data.userid == user_to_follow ) {
-				currently_following = false;
-				console.log('\nChanging to ' + data.text + '\n', data); 
-				changeRooms( bot, data.text);
-				current_room = data.text;
-			} else {
-				console.log('\nThe wrong person said something\n', data); 
-			}
-		}
 		
 		// Awesome this song
 		if ( text.indexOf("awesome") != -1 && text.indexOf("woofus") != -1 ) {
@@ -235,6 +253,30 @@
 			botSpeak( bot, 'My ears are bleeding!' );			
 			sleep(1000);
 			botVote( bot, 'down', true );
+			handled_command = true;
+	    }
+		
+		// Engage Disco Mode
+		if ( text.indexOf("disco mode") != -1 && text.indexOf("woofus") != -1 ) {
+			if( text.indexOf("engage") != -1 ) {
+				allow_disco_mode = true;
+				var discoTimer= setInterval( function() {
+					if( !allow_disco_mode ) {
+						clearInterval(discoTimer);
+						return;
+					}
+					
+					if( current_avatar < 21 ) {
+						current_avatar++;
+					} else {
+						current_avatar = 0;
+					}
+					
+					bot.setAvatar( current_avatar );
+				},1000);
+			} else {
+				allow_disco_mode = false;
+			}
 			handled_command = true;
 	    }
 		
@@ -460,8 +502,11 @@
 		// Say stuff when someone says woofus
 	    if ( !handled_command && text.indexOf("woofus") != -1 ) {
 			console.log('\nI heard my name\n\n', data); 
-			relayToBot( text.replace("woofus", "") );
-			//botSpeak( bot, '/me woofus' );
+			if( connectedToAIM ) {
+				relayToBot( text.replace("woofus", "") ); 
+			} else {
+				botSpeak( bot, '/me woofus' );
+			}
 			sleep(1000);
 	    }
 		
