@@ -40,10 +40,15 @@
 	var handled_command = false;
 	var control_army= true;
 	
+	var joiningFirstRoom = true;
+	var stop_animation = false;
+	
 	var user_to_follow = '4e14a021a3f75102d3013beb';
 	var currently_following = false;
 	var currently_sending_trooper = false;
 	var trooper_sent = 0;
+	
+	var current_frame = 0;
 	
 	var allow_disco_mode= false;
 	
@@ -125,17 +130,41 @@
 			},100000);
 		}
 		
-		bot.stalk( user_to_follow, function(data) {
-					console.log( '\nUser is still in the room\n\n' );
-					console.log( data );
+		// Start the profile animation if this is the first time we're joining a room
+		if( joiningFirstRoom ) {
+			joiningFirstRoom = false;
+			
+			var animationTimer= setInterval( function() {			
+				if( current_frame == 0 ) {
+					//console.log( "\n<('_'<)" ); 
+					current_frame = 1;
+					bot.modifyProfile({ hangout:"<('_'<)"});
+				} else {
+					//console.log( "\n(>'_')>" ); 
+					bot.modifyProfile({ hangout:"(>'_')>"});
+					current_frame = 0;
+				}
+				
 					
-					if( data.roomId != current_room ) {
-						console.log( '\nFollowing the user' ); 
-						changeRooms( bot, data.roomId );
-						current_room = data.roomId;
-					}
-		}); // end bot stalk	
+				if( stop_animation ) {
+					console.log( '\nStopping animation' ); 
+					clearInterval( animationTimer );
+					currently_following = false;
+				}	
+			},200);
+		}
 		
+		bot.stalk( user_to_follow, function(data) {
+			console.log( '\nUser is still in the room\n\n' );
+			console.log( data );
+			
+			if( data.roomId != current_room ) {
+				console.log( '\nFollowing the user' ); 
+				changeRooms( bot, data.roomId );
+				current_room = data.roomId;
+			}
+		}); // end bot stalk	
+				
 		botSpeak( bot, "Aaaand we're back" );
 	});
 	
@@ -235,6 +264,23 @@
 					}
 				}); // end bot stalk	
 			},2000);
+			handled_command = true;
+	    }
+		
+		// Go Home
+		if ( text.indexOf("go home") != -1 && text.indexOf("woofus") != -1 ) {
+			console.log('\nSomeone asked me to go home\n\n', data);
+			botSpeak( bot, 'Home sweet home' );		
+			
+			changeRooms( bot, ROOMID );
+			
+			if( text.indexOf("come back") != -1 ) {
+				changeRooms( bot, current_room );
+			} else {
+				current_room = ROOMID;
+			}
+			
+			botVote( bot, 'up', true );
 			handled_command = true;
 	    }
 		
