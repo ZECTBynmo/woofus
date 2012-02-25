@@ -1,1 +1,1 @@
-chatbot: node chatbot.js 
+web: node chatbot.js
