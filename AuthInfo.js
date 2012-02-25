@@ -5,7 +5,7 @@ var globalNamespace = {};
     return '4eca8214a3f751459f000b4a';
   };
   
-  exports.GetAuth = function(str) {
+  exports.GetAuth = function(str) { 
     return 'auth+live+53781ac2f01396e4cfe1afb3c564b9fa771bee57';
   };
   
