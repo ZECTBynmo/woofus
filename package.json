@@ -1,10 +1,9 @@
 {
   "name": "chatbot",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "dependencies": {
 	"ttapi": "1.2.1",
 	"lastfm": "0.8.0",
-	"oscar": "0.1.2",
-	"authinfo": "0.0.1"
+	"oscar": "0.1.2"
   }
 }
