@@ -4,6 +4,7 @@
   "dependencies": {
 	"ttapi": "1.2.1",
 	"lastfm": "0.8.0",
-	"oscar": "0.1.2"
+	"oscar": "0.1.2",
+	"authinfo": "0.0.1"
   }
 }
