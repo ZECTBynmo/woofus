@@ -2,7 +2,7 @@
 	var Bot = require('ttapi');							// TT API
 	var LastFmNode = require('lastfm').LastFmNode;		// LastFM API
 	var tt_auth = require('./AuthInfo.js');				// Our auth info (we do auth externally so the code can go up on git)
-	//var oscar = require('oscar');						// AIM API
+	var oscar = require('oscar');						// AIM API
 	
 	var AUTH = tt_auth.GetAuth();
 	var USERID = tt_auth.GetUserID();
@@ -25,14 +25,13 @@
 	
 	
 	// AIM Struct
-	/*
 	var aim = new oscar.OscarConnection({
 	  connection: {
 		username: tt_auth.GetScreenName(),
 		password: tt_auth.GetAIMPassword()
 	  }
 	});
-	*/
+	
 	
 	var current_room = ROOMID;
 	var current_avatar = 0;
@@ -84,7 +83,7 @@
 	
 	
 	// Connect to AIM
-	/*
+	
 	aim.connect(function(err) {
 	  if (err) {
 		console.log('AIM connection error: ' + err);
@@ -96,7 +95,9 @@
 		connectedToAIM = true;
 	  }
 	});
-	*/
+	
+	
+	var myScriptVersion = '0.0.0';
 
 	/*
 	// Handle HTTP requests
