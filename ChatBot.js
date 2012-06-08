@@ -7,7 +7,7 @@
 	var AUTH = tt_auth.GetAuth();
 	var USERID = tt_auth.GetUserID();
 	var ROOMID = tt_auth.GetRoomID();
-	var LASTFM_KEY = tt_auth.GetLastFMKey();
+	var LASTFM_KEY = tt_auth.GetLastFMKey(); 
 	var LASTFM_SECRET = tt_auth.GetLastFMSecret();
 	var APP_STRING = tt_auth.GetAppString();
 	
