@@ -135,6 +135,7 @@
 			joiningFirstRoom = false;
 			
 			var animationTimer= setInterval( function() {			
+				/*
 				if( current_frame == 0 ) {
 					//console.log( "\n<('_'<)" ); 
 					current_frame = 1;
@@ -144,7 +145,7 @@
 					bot.modifyProfile({ hangout:"(>'_')>"});
 					current_frame = 0;
 				}
-				
+				*/
 					
 				if( stop_animation ) {
 					console.log( '\nStopping animation' ); 
@@ -152,6 +153,12 @@
 					currently_following = false;
 				}	
 			},200);
+		}
+		
+		// Get rid of all the troops
+		for( botIndex=0; botIndex<num_army_bots; botIndex=botIndex+1 ) {
+				sleep(250);
+				botArmy[botIndex].roomDeregister();
 		}
 		
 		bot.stalk( user_to_follow, function(data) {
@@ -173,6 +180,10 @@
 	aim.on('im', function(text, sender, flags, when) {
 		if( sender.name.indexOf("woofus") != -1 ) {
 			console.log( "Got an AIM message from ourselves" );
+			return;
+		} else if( sender.name.indexOf("AOL System Msg") != -1 ) {
+			console.log( "We're signed into AIM in multiple places" );
+			aim.sendIM( sender.name, "1" );
 			return;
 		}
 	
@@ -220,6 +231,14 @@
 		//////////////////////////////////////////////////////////////////////////////////////////////////////
 		//	Handle Commands
 		//////////////////////////////////////////////////////////////////////////////////////////////////////		
+		
+		if ( text.indexOf("/tableflip") != -1 ) {
+			console.log('\nASSHOLE\n\n', data); 
+			botSpeak( bot, '/tablefix' );
+			botSpeak( bot, 'ass' );
+			handled_command = true;
+	    }
+		
 		// Skip this song
 		if ( text.indexOf("skip this") != -1 && text.indexOf("woofus") != -1 ) {
 			console.log('\nSkipping my song\n\n', data); 
@@ -243,6 +262,29 @@
 			always_skip= false;
 			handled_command = true;
 	    }
+		
+		// What's next in playlist
+		if ( text.indexOf("what") != -1 && text.indexOf("next") != -1 && text.indexOf("woofus") != -1 ) {
+			console.log('\nSomeone asked whats next\n\n', data);
+			
+			bot.playlistAll( function(data) {
+				botSpeak( bot, data.list[0].metadata.song + " by " + data.list[0].metadata.artist );
+			})
+			
+			handled_command = true;
+	    }	
+		
+		// Skip the next song in the playlist
+		if ( text.indexOf("skip") != -1 && text.indexOf("next") != -1 && text.indexOf("woofus") != -1 ) {
+			console.log('\nSomeone asked me to change my next song\n\n', data);
+						
+			bot.playlistAll( function(data) {
+				bot.playlistReorder( 0, 150 );			
+				botSpeak( bot, data.list[1].metadata.song + " by " + data.list[1].metadata.artist );
+			})
+			
+			handled_command = true;
+	    }	
 		
 		// Follow this user
 		if ( data.userid == user_to_follow && text.indexOf("follow me") != -1 && text.indexOf("woofus") != -1 ) {
